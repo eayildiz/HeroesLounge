@@ -24,7 +24,8 @@ class SlothStatistics extends ComponentBase
     public $heroes = null;
     public $maps = null;
     public $participatedSeasons = null;
-    public $selectedSeason = null;
+    public $selectedSeasons = [];
+    public $lastThree = null;
 
     public function init()
     {
@@ -46,11 +47,25 @@ class SlothStatistics extends ComponentBase
         $this->selectedSeason = $this->participatedSeasons
             ->filter(function ($season) { return $season->is_active; })
             ->last() ?? $this->participatedSeasons->first();
+        
+        $this->lastThree = $this->participatedSeasons->filter(
+            function ($season) {
+                return in_array($season->type, [1, 2]);
+            }
+        )->take(3)->pluck('title', 'id');
 
-        $this->calculateStats($this->selectedSeason);
+        $activeSeasons = $this->participatedSeasons->filter(
+            function ($season) {
+                return $season->is_active;
+            }
+        );
+        $selectedSeason = $activeSeasons->count() > 0 ? $activeSeasons->take(1) : $this->participatedSeasons->take(1);
+        $this->selectedSeasons = $selectedSeason->pluck('id')->toArray();
+        
+        $this->calculateStats($this->selectedSeasons);
     }
 
-    public function calculateStats($season)
+    public function calculateStats($seasons)
     {
         $mapStats = Stats::calculateMapStatisticsForSloth($this->sloth->gameParticipations, $this->selectedSeason);
         $this->maps = $mapStats->sortByDesc(function ($map_array) {
@@ -105,6 +120,8 @@ class SlothStatistics extends ComponentBase
         $season_id = input('season_id');
         if ($season_id == -1) {
             $this->selectedSeason = null;
+        } else if($season_id === 'last-three'){
+            $this->selectedSeasons = $this->lastThree->keys()->toArray();
         } else {
             $this->selectedSeason = Season::find($season_id);
         }
