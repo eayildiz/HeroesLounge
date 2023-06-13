@@ -67,7 +67,7 @@ class SlothStatistics extends ComponentBase
 
     public function calculateStats($seasons)
     {
-        $mapStats = Stats::calculateMapStatisticsForSloth($this->sloth->gameParticipations, $this->selectedSeason);
+        $mapStats = Stats::calculateMapStatisticsForSloth($this->sloth->gameParticipations, $this->selectedSeasons);
         $this->maps = $mapStats->sortByDesc(function ($map_array) {
             return $map_array['picks_by'] + $map_array['picks_vs'];
         });
@@ -75,7 +75,7 @@ class SlothStatistics extends ComponentBase
             return $carry + $map["picks_by"] + $map["picks_vs"];
         }, 0);
 
-        $heroStats = Stats::calculateHeroStatistics("slothAll", $this->sloth->gameParticipations, null, $this->selectedSeason);
+        $heroStats = Stats::calculateHeroStatistics("slothAll", $this->sloth->gameParticipations, null, $this->selectedSeasons);
         foreach ($heroStats as $key => $hero_array) {
             if ($hero_array['picks'] > 0) {
                 $hero_array['winrate'] = round($hero_array['wins'] / (0.01 * $hero_array['picks']),2);
@@ -123,9 +123,9 @@ class SlothStatistics extends ComponentBase
         } else if($season_id === 'last-three'){
             $this->selectedSeasons = $this->lastThree->keys()->toArray();
         } else {
-            $this->selectedSeason = Season::find($season_id);
+            $this->selectedSeasons = [Season::find($season_id)->id];
         }
-        $this->calculateStats($this->selectedSeason);
+        $this->calculateStats($this->selectedSeasons);
         return [
             '#slothstatistics' => $this->renderPartial('@stats')
         ];
