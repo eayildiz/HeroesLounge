@@ -36,6 +36,7 @@ Displaying stats of
   <option value="{{season.id}}"{% if __SELF__.selectedSeason.id==season.id%}selected="selected"{%endif%}>{{season.title}}</option>
   {% endfor %}
   <option value="-1" >all time</option>
+  <option value="last-three" >last three seasons ({{__SELF__.lastThree | join(', ')}})</option>
 </select>
 <button type="submit">Update</button>
 </form>
